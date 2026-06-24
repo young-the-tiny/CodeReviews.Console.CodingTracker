@@ -170,10 +170,26 @@ internal class UserInterface
 
     // --- helpers ---
 
-    static DateTime PromptDate(string label) =>
-        AnsiConsole.Prompt(
-            new TextPrompt<DateTime>($"{label} ([grey]{AppConfig.DateFormat}[/]):")
-                .ValidationErrorMessage($"[red]Use the format {AppConfig.DateFormat}[/]"));
+    static DateTime PromptDate(string label)
+    {
+        var input = AnsiConsole.Prompt(
+            new TextPrompt<string>($"{label} ([grey]{AppConfig.DateFormat}[/]):")
+                .Validate(value =>
+                    DateTime.TryParseExact(
+                        value,
+                        AppConfig.DateFormat,
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        System.Globalization.DateTimeStyles.None,
+                        out _)
+                        ? ValidationResult.Success()
+                        : ValidationResult.Error($"[red]Use the format {AppConfig.DateFormat}[/]")));
+
+        return DateTime.ParseExact(
+            input,
+            AppConfig.DateFormat,
+            System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None);
+    }
 
     static int? PromptExistingId()
     {
